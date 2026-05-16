@@ -53,7 +53,7 @@
                 
                 <div class="md:col-span-2 space-y-6">
                     @php
-                        // Mengelompokkan array/collection $services berdasarkan kolom 'category' di MySQL Lokal
+                        // Mengelompokkan array/collection $services berdasarkan kolom 'category'
                         $groupedServices = collect($services)->groupBy('category');
                     @endphp
 
@@ -65,36 +65,43 @@
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 @foreach($items as $s)
+                                @php 
+                                    // Amankan data tipe Object maupun Array dari DB Laragon
+                                    $sId = data_get($s, 'id');
+                                    $sName = data_get($s, 'name');
+                                    $sPrice = data_get($s, 'price', 0);
+                                    $sUnit = data_get($s, 'unit', 'kg');
+                                @endphp
                                 <div class="bg-white border rounded-2xl p-4 transition-all duration-300 hover:shadow-md"
-                                     :class="selected.find(i => i.id === {{ $s['id'] }}) ? 'border-blue-500 ring-1 ring-blue-50' : 'border-gray-200'">
+                                     :class="selected.find(i => i.id === {{ $sId }}) ? 'border-blue-500 ring-1 ring-blue-50' : 'border-gray-200'">
                                     
                                     <div class="flex items-center justify-between gap-3">
                                         <div class="flex items-center gap-3">
                                             <div class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-xl shrink-0">
-                                                @if(Str::contains(strtolower($s['name']), 'kiloan')) 👕 
-                                                @elseif(Str::contains(strtolower($s['name']), ['selimut', 'bedcover', 'bantal', 'linen'])) 🛌
-                                                @elseif(Str::contains(strtolower($s['name']), ['sepatu', 'tas'])) 👟 
+                                                @if(Str::contains(strtolower($sName), 'kiloan')) 👕 
+                                                @elseif(Str::contains(strtolower($sName), ['selimut', 'bedcover', 'bantal', 'linen'])) 🛌
+                                                @elseif(Str::contains(strtolower($sName), ['sepatu', 'tas'])) 👟 
                                                 @else 🧺 @endif
                                             </div>
                                             <div>
-                                                <h3 class="font-bold text-gray-900 text-sm leading-tight">{{ $s['name'] }}</h3>
-                                                <p class="text-xs text-blue-600 font-semibold mt-0.5">Rp {{ number_format($s['price'], 0, ',', '.') }} / {{ $s['unit'] }}</p>
+                                                <h3 class="font-bold text-gray-900 text-sm leading-tight">{{ $sName }}</h3>
+                                                <p class="text-xs text-blue-600 font-semibold mt-0.5">Rp {{ number_format($sPrice, 0, ',', '.') }} / {{ $sUnit }}</p>
                                             </div>
                                         </div>
 
                                         @php
-                                            $isSingleUnit = Str::contains(strtolower($s['unit']), ['pcs', 'satuan', 'pasang']);
+                                            $isSingleUnit = Str::contains(strtolower($sUnit), ['pcs', 'satuan', 'pasang']);
                                             $step = $isSingleUnit ? 1 : 0.5;
                                         @endphp
 
                                         <div class="flex items-center gap-2 bg-gray-50 rounded-full p-1 scale-90" 
                                              x-data="{ qty: 0, step: {{ $step }} }"
                                              x-init="$watch('qty', value => {
-                                                 let id = {{ $s['id'] }};
+                                                 let id = {{ $sId }};
                                                  let index = selected.findIndex(i => i.id === id);
                                                  if (value > 0) {
                                                      if (index === -1) {
-                                                         selected.push({ id: id, name: '{{ $s['name'] }}', price: {{ $s['price'] }}, qty: value });
+                                                         selected.push({ id: id, name: '{{ $sName }}', price: {{ $sPrice }}, qty: value });
                                                      } else {
                                                          selected[index].qty = value;
                                                      }
@@ -118,7 +125,7 @@
                     @endforelse
                 </div>
 
-                <form action="{{ route('checkout') }}" method="POST" class="md:col-span-1 md:sticky md:top-6">
+                <form action="{{ route('order.checkout') }}" method="POST" class="md:col-span-1 md:sticky md:top-6">
                     @csrf
                     <input type="hidden" name="items" :value="JSON.stringify(selected)">
 
