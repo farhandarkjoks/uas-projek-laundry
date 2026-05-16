@@ -53,7 +53,7 @@
                 
                 <div class="md:col-span-2 space-y-6">
                     @php
-                        // Mengelompokkan array/collection $services berdasarkan kolom 'category'
+                        // Mengelompokkan array/collection $services berdasarkan kolom 'category' di MySQL Lokal
                         $groupedServices = collect($services)->groupBy('category');
                     @endphp
 
@@ -83,7 +83,6 @@
                                         </div>
 
                                         @php
-                                            // Ditambahkan 'pasang' agar bernilai bulat 1 otomatis
                                             $isSingleUnit = Str::contains(strtolower($s['unit']), ['pcs', 'satuan', 'pasang']);
                                             $step = $isSingleUnit ? 1 : 0.5;
                                         @endphp
@@ -114,12 +113,12 @@
                         </div>
                     @empty
                         <div class="text-center py-10 bg-white rounded-2xl border border-dashed border-gray-300">
-                            <p class="text-gray-500 font-medium text-sm">Layanan tidak tersedia.</p>
+                            <p class="text-gray-500 font-medium text-sm">Layanan tidak tersedia di database lokal.</p>
                         </div>
                     @endforelse
                 </div>
 
-                <form action="{{ route('order.checkout') }}" method="POST" class="md:col-span-1 md:sticky md:top-6">
+                <form action="{{ route('checkout') }}" method="POST" class="md:col-span-1 md:sticky md:top-6">
                     @csrf
                     <input type="hidden" name="items" :value="JSON.stringify(selected)">
 
@@ -150,7 +149,7 @@
                         <button type="submit"
                                 :disabled="selected.length === 0" 
                                 class="w-full py-3.5 bg-blue-600 disabled:bg-gray-200 text-white disabled:text-gray-400 rounded-xl font-bold text-sm shadow-md shadow-blue-50 transition-all active:scale-[0.98] block text-center">
-                            Beli Sekarang
+                            Lanjutkan ke Checkout
                         </button>
                     </div>
                 </form>

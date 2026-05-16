@@ -29,6 +29,7 @@ class OrderController extends Controller
             $totalPrice += $item['price'] * $item['qty'];
         }
 
+        // Dipastikan datanya terlempar rapi dalam bentuk array murni ke view payment
         return view('orders.payment', [
             'items' => $selectedItems,
             'totalPrice' => $totalPrice
@@ -36,47 +37,58 @@ class OrderController extends Controller
     }
 
     /**
-     * Menyimpan data transaksi ke database Supabase (Tabel transactions & transaction_details)
+     * Menyimpan data transaksi ke database Localhost & mengarahkan ke halaman sukses
      */
     public function store(Request $request)
     {
+        // 1. Validasi kiriman form dari blade checkout
         $request->validate([
-            'items' => 'required|string',
-            'payment_method' => 'required|string',
+            'items'           => 'required|string',
+            'payment_method'  => 'required|string',
+            'delivery_type'   => 'required|string',
+            'user_phone'      => 'required|string',
+            'delivery_address'=> 'required_if:delivery_type,Antar Jemput|nullable',
         ]);
 
         $selectedItems = json_decode($request->items, true);
         
-        $totalPrice = 0;
+        // 2. Hitung total dasar dari item laundry
+        $subtotal = 0;
         foreach ($selectedItems as $item) {
-            $totalPrice += $item['price'] * $item['qty'];
+            $subtotal += $item['price'] * $item['qty'];
         }
 
-        // Ambil data user yang sedang login untuk mengisi alamat & hp otomatis jika ada
-        $user = Auth::user();
+        // Tambah biaya tambahan 10k jika user minta diantar jemput
+        $deliveryFee = ($request->delivery_type === 'Antar Jemput') ? 10000 : 0;
+        $grandTotal = $subtotal + $deliveryFee;
 
-        // Menggunakan Database Transaction agar jika salah satu tabel gagal, semua dibatalkan (aman)
-        DB::transaction(function () use ($selectedItems, $totalPrice, $request, $user) {
+        $user = Auth::user();
+        
+        // Buat variabel penampung ID transaksi di luar closure transaction
+        $transactionId = null;
+
+        // 3. Proses penyimpanan ganda dengan Database Transaction (Localhost MySQL)
+        DB::transaction(function () use ($selectedItems, $grandTotal, $request, $user, &$transactionId) {
             
-            // 1. Simpan ke tabel induk: `transactions`
+            // Simpan ke tabel induk: `transactions`
             $transactionId = DB::table('transactions')->insertGetId([
                 'user_id'        => $user->id,
                 'invoice_code'   => 'INV-' . strtoupper(Str::random(8)),
-                'total_price'    => $totalPrice,
-                'status'         => 'Diterima', // Status awal tracking laundry
-                'address'        => $user->address ?? '-', 
-                'phone'          => $user->phone ?? '-',
+                'total_price'    => $grandTotal,
+                'status'         => 'Diterima', 
+                'address'        => $request->delivery_address ?? '-', 
+                'phone'          => $request->user_phone,              
                 'payment_method' => $request->payment_method,
-                'delivery_type'  => 'Standard', // Default delivery
+                'delivery_type'  => $request->delivery_type,           
                 'created_at'     => now(),
                 'updated_at'     => now(),
             ]);
 
-            // 2. Simpan ke tabel detail: `transaction_details`
+            // Simpan ke tabel detail: `transaction_details`
             foreach ($selectedItems as $item) {
                 DB::table('transaction_details')->insert([
                     'transaction_id' => $transactionId,
-                    'service_id'     => $item['id'], // ID dari layanan (kiloan/selimut/sepatu)
+                    'service_id'     => $item['id'], 
                     'quantity'       => $item['qty'],
                     'price'          => $item['price'],
                     'subtotal'       => $item['price'] * $item['qty'],
@@ -86,6 +98,10 @@ class OrderController extends Controller
             }
         });
 
-        return redirect()->route('dashboard')->with('status', 'Pesanan laundry berhasil dibuat! Silakan pantau status di dashboard.');
+        // 4. Ambil data transaksi barusan dari database local
+        $transaction = DB::table('transactions')->where('id', $transactionId)->first();
+
+        // 5. Tembak langsung ke view order success kamu dengan membawa data transaksi tunggal!
+        return view('order-success', compact('transaction'));
     }
 }

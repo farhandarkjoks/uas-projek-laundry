@@ -32,7 +32,7 @@ Route::middleware('auth')->group(function () {
     
     // Halaman Dashboard
     Route::get('/welcome', function () {
-        return view('welcome');
+        return view('layanan');
     })->middleware(['verified'])->name('dashboard');
 
     // ==========================================

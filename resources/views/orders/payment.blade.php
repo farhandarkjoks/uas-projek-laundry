@@ -64,14 +64,14 @@
                         <div class="grid grid-cols-2 gap-2">
                             <label class="border-2 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition text-center"
                                    :class="deliveryType === 'Bawa Sendiri' ? 'border-blue-600 bg-blue-50/40 text-blue-700 font-bold' : 'border-gray-200 text-gray-500'">
-                                <input type="radio" name="delivery_type" value="Bawa Sendiri" x-model="deliveryType" class="sr-only">
+                                <input type="radio" name="delivery_type" value="Bawa Sendiri" x-model="deliveryType" class="hidden">
                                 <span class="text-xl mb-1">🏠</span>
                                 <span class="text-xs font-bold">Bawa Sendiri</span>
                             </label>
                             
                             <label class="border-2 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition text-center"
                                    :class="deliveryType === 'Antar Jemput' ? 'border-blue-600 bg-blue-50/40 text-blue-700 font-bold' : 'border-gray-200 text-gray-500'">
-                                <input type="radio" name="delivery_type" value="Antar Jemput" x-model="deliveryType" class="sr-only">
+                                <input type="radio" name="delivery_type" value="Antar Jemput" x-model="deliveryType" class="hidden">
                                 <span class="text-xl mb-1">🛵</span>
                                 <span class="text-xs font-bold">Antar Jemput</span>
                             </label>
@@ -85,7 +85,7 @@
                             <label class="border rounded-xl p-3 flex items-center justify-between cursor-pointer transition"
                                    :class="paymentMethod === 'transfer' ? 'border-blue-500 bg-blue-50/20' : 'border-gray-200'">
                                 <div class="flex items-center gap-3">
-                                    <input type="radio" name="payment_method" value="transfer" x-model="paymentMethod" class="sr-only">
+                                    <input type="radio" name="payment_method" value="transfer" x-model="paymentMethod" class="hidden">
                                     <span class="text-lg">🏦</span>
                                     <span class="text-xs font-bold text-gray-800">Transfer Bank (Manual)</span>
                                 </div>
@@ -97,7 +97,7 @@
                             <label class="border rounded-xl p-3 flex items-center justify-between cursor-pointer transition"
                                    :class="paymentMethod === 'tunai' ? 'border-blue-500 bg-blue-50/20' : 'border-gray-200'">
                                 <div class="flex items-center gap-3">
-                                    <input type="radio" name="payment_method" value="tunai" x-model="paymentMethod" class="sr-only">
+                                    <input type="radio" name="payment_method" value="tunai" x-model="paymentMethod" class="hidden">
                                     <span class="text-lg">💵</span>
                                     <span class="text-xs font-bold text-gray-800">Tunai / Cash</span>
                                 </div>
@@ -169,7 +169,7 @@
 
                         <button type="submit" 
                                 class="w-full mt-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-                            <span>Bayar</span>
+                            <span>Pesan Sekarang</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                             </svg>
